@@ -12,6 +12,6 @@ rust-project.json
 *.iml
 *.o
 public/
-
+temp*
 # Local Netlify folder
 .netlify
