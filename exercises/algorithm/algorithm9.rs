@@ -5,7 +5,6 @@
 
 use std::cmp::Ord;
 use std::default::Default;
-use std::mem::swap;
 
 pub struct Heap<T>
 where
@@ -23,7 +22,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![],
+            items: vec![T::default()],
             comparator,
         }
     }
@@ -37,13 +36,14 @@ where
     }
 
     pub fn add(&mut self, value: T) {
+        self.count += 1;
         let mut idx = self.count;
         let mut p_idx = self.parent_idx(idx);
-        self.count += 1;
+        
         self.items.push(value);
 
         while !(self.comparator)(&self.items[p_idx],&self.items[idx]) {
-            if idx == p_idx {
+            if 0 == p_idx {
                 break;
             }
             self.items.swap(idx, p_idx);
@@ -72,7 +72,7 @@ where
     fn smallest_child_idx(&self, idx: usize) -> usize {
         let lidx = self.left_child_idx(idx);
         let ridx = self.right_child_idx(idx);
-        if self.children_present(ridx) {
+        if ridx <= self.count {
             let lval = &self.items[lidx];
             let rval = &self.items[ridx];
             if (self.comparator)(lval, rval) {
@@ -80,7 +80,7 @@ where
             } else {
                 ridx
             }
-        } else if self.children_present(lidx) {
+        } else if lidx <= self.count {
             lidx
         } else {
             idx
@@ -114,9 +114,10 @@ where
         if self.is_empty() {
             None
         } else {
-            self.items.swap(0, self.count-1);
+            self.items.swap(1, self.count);
             let ret = self.items.pop().unwrap();
-            let mut idx:usize = 0;
+            self.count -= 1;
+            let mut idx:usize = 1;
             let mut c_idx = self.smallest_child_idx(idx);
             while !(self.comparator)(&self.items[idx], &self.items[c_idx]) {
                 
