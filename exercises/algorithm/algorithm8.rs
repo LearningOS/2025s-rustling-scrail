@@ -67,28 +67,32 @@ impl<T> myStack<T> {
         }
     }
 
-    fn swap_queue(& mut self)  {
-        std::mem::swap(&mut self.q1,&mut self.q2);
-        self.active_1 = !self.active_1;
-    }
-    pub fn push(&mut self, elem: T) {
+    fn get_rqs(&mut self) -> (&mut Queue<T>, &mut Queue<T>) {
         if self.active_1 {
-            self.q1.enqueue(elem);
+            return (&mut self.q1, &mut self.q2)
         } else {
-            self.q2.enqueue(elem);
+            return (&mut self.q2, &mut self.q1)
         }
+    }
+
+    pub fn push(&mut self, elem: T) {
+        let (rq1,_) = self.get_rqs();
+        rq1.enqueue(elem);
         self.size += 1;
     }
     pub fn pop(&mut self) -> Result<T, &str> {
         if self.is_empty() {
             return Err("Stack is empty");
         }
-        for _ in (0..self.size-1) {
-            let elem = self.q1.dequeue()?;
-            self.q2.enqueue(elem);
-        }
+        let size = self.size;
         self.size -= 1;
-        self.q2.dequeue()
+        let (rq1, rq2) = self.get_rqs();
+        for _ in 0..size-1 {
+            rq2.enqueue(rq1.dequeue().unwrap());
+        }
+        let ret = rq1.dequeue().unwrap();
+        self.active_1 = !self.active_1;
+        Ok(ret)
 		
     }
     pub fn is_empty(&self) -> bool {

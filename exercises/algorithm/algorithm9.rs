@@ -2,10 +2,10 @@
 	heap
 	This question requires you to implement a binary heap function
 */
-// I AM NOT DONE
 
 use std::cmp::Ord;
 use std::default::Default;
+use std::mem::swap;
 
 pub struct Heap<T>
 where
@@ -23,7 +23,7 @@ where
     pub fn new(comparator: fn(&T, &T) -> bool) -> Self {
         Self {
             count: 0,
-            items: vec![T::default()],
+            items: vec![],
             comparator,
         }
     }
@@ -37,7 +37,20 @@ where
     }
 
     pub fn add(&mut self, value: T) {
-        //TODO
+        let mut idx = self.count;
+        let mut p_idx = self.parent_idx(idx);
+        self.count += 1;
+        self.items.push(value);
+
+        while !(self.comparator)(&self.items[p_idx],&self.items[idx]) {
+            if idx == p_idx {
+                break;
+            }
+            self.items.swap(idx, p_idx);
+            idx = self.parent_idx(idx);
+            p_idx = self.parent_idx(idx);
+        }
+        
     }
 
     fn parent_idx(&self, idx: usize) -> usize {
@@ -57,8 +70,22 @@ where
     }
 
     fn smallest_child_idx(&self, idx: usize) -> usize {
-        //TODO
-		0
+        let lidx = self.left_child_idx(idx);
+        let ridx = self.right_child_idx(idx);
+        if self.children_present(ridx) {
+            let lval = &self.items[lidx];
+            let rval = &self.items[ridx];
+            if (self.comparator)(lval, rval) {
+                lidx
+            } else {
+                ridx
+            }
+        } else if self.children_present(lidx) {
+            lidx
+        } else {
+            idx
+        }
+        
     }
 }
 
@@ -84,8 +111,24 @@ where
     type Item = T;
 
     fn next(&mut self) -> Option<T> {
-        //TODO
-		None
+        if self.is_empty() {
+            None
+        } else {
+            self.items.swap(0, self.count-1);
+            let ret = self.items.pop().unwrap();
+            let mut idx:usize = 0;
+            let mut c_idx = self.smallest_child_idx(idx);
+            while !(self.comparator)(&self.items[idx], &self.items[c_idx]) {
+                
+                if idx == self.smallest_child_idx(idx) {
+                    break;
+                }
+                self.items.swap(idx, c_idx);
+                idx = self.smallest_child_idx(idx);
+                c_idx = self.smallest_child_idx(idx);
+            }
+            Some(ret)
+        }
     }
 }
 
